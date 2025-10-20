@@ -3,10 +3,10 @@
 
 #include "driver/spi_master.h"
 #if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0))
-#include "driver/i2c_master.h"
+// #include "driver/i2c_master.h"
 #else
-#include "driver/i2c.h"
 #endif
+#include "driver/i2c.h"
 
 // Following definitions are bollowed from 
 // http://robotcantalk.blogspot.com/2015/03/interfacing-arduino-with-ssd1306-driven.html
@@ -112,10 +112,10 @@ typedef struct {
 	bool _flip;
 	i2c_port_t _i2c_num;
 	spi_device_handle_t _spi_device_handle;
-#if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0))
-	i2c_master_bus_handle_t _i2c_bus_handle;
-	i2c_master_dev_handle_t _i2c_dev_handle;
-#endif
+// #if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0))
+// 	i2c_master_bus_handle_t _i2c_bus_handle;
+// 	i2c_master_dev_handle_t _i2c_dev_handle;
+// #endif
 } SSD1306_t;
 
 #ifdef __cplusplus
