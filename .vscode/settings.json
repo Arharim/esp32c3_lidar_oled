@@ -1,0 +1,29 @@
+{
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.espIdfPath": "/home/arharim/esp/v5.5.1/esp-idf",
+  "idf.toolsPath": "/home/arharim/.espressif",
+  "idf.pythonInstallPath": "/usr/bin/python3",
+  "files.associations": {
+    "i2c.h": "c",
+    "freertos.h": "c",
+    "portable.h": "c",
+    "vl53l0x_device.h": "c",
+    "vl53l0x.h": "c",
+    "i2c_master.h": "c",
+    "vl53l0x_types.h": "c",
+    "ssd1306.h": "c",
+    "vl53l0x_api.h": "c",
+    "vl53l0x_platform.h": "c",
+    "vl53l0x_i2c_platform.h": "c",
+    "font8x8_basic.h": "c",
+    "vl53l0x_platform_log.h": "c"
+  },
+  "idf.flashType": "JTAG",
+  "idf.port": "/dev/ttyACM0",
+  "idf.openOcdConfigs": [
+    "board/esp32c3-builtin.cfg"
+  ],
+  "idf.customExtraVars": {
+    "IDF_TARGET": "esp32c3"
+  }
+}
