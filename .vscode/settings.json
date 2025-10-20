@@ -1,8 +1,8 @@
 {
   "C_Cpp.intelliSenseEngine": "default",
-  "idf.espIdfPath": "/home/arharim/esp/v5.5.1/esp-idf",
-  "idf.toolsPath": "/home/arharim/.espressif",
-  "idf.pythonInstallPath": "/usr/bin/python3",
+  "idf.espIdfPathWin": "C:\\esp\\v5.2.5\\esp-idf",
+  "idf.toolsPathWin": "C:\\Users\\KDubrovin\\.espressif",
+  "idf.pythonInstallPath": "C:\\Users\\KDubrovin\\.espressif\\tools\\idf-python\\3.11.2\\python.exe",
   "files.associations": {
     "i2c.h": "c",
     "freertos.h": "c",
@@ -16,14 +16,20 @@
     "vl53l0x_platform.h": "c",
     "vl53l0x_i2c_platform.h": "c",
     "font8x8_basic.h": "c",
-    "vl53l0x_platform_log.h": "c"
+    "vl53l0x_platform_log.h": "c",
+    "esp_log.h": "c",
+    "esp_err.h": "c",
+    "vl53l0x_api_strings.h": "c",
+    "vl53l0x_def.h": "c"
   },
-  "idf.flashType": "JTAG",
+  "idf.flashType": "UART",
   "idf.port": "/dev/ttyACM0",
   "idf.openOcdConfigs": [
     "board/esp32c3-builtin.cfg"
   ],
   "idf.customExtraVars": {
     "IDF_TARGET": "esp32c3"
-  }
+  },
+  "idf.portWin": "COM19",
+  "C_Cpp.errorSquiggles": "disabled",
 }
