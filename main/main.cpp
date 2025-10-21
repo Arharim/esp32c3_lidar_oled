@@ -108,35 +108,6 @@ extern "C" void app_main(void)
 #endif // CONFIG_SSD1306_128x32
 	vTaskDelay(3000 / portTICK_PERIOD_MS);
 	
-	// // Display Count Down
-	// uint8_t image[24];
-	// memset(image, 0, sizeof(image));
-	// ssd1306_display_image(&dev, top, (6*8-1), image, sizeof(image));
-	// ssd1306_display_image(&dev, top+1, (6*8-1), image, sizeof(image));
-	// ssd1306_display_image(&dev, top+2, (6*8-1), image, sizeof(image));
-	// for(int font=0x39;font>0x30;font--) {
-	// 	memset(image, 0, sizeof(image));
-	// 	ssd1306_display_image(&dev, top+1, (7*8-1), image, 8);
-	// 	memcpy(image, font8x8_basic_tr[font], 8);
-	// 	if (dev._flip) ssd1306_flip(image, 8);
-	// 	ssd1306_display_image(&dev, top+1, (7*8-1), image, 8);
-	// 	vTaskDelay(1000 / portTICK_PERIOD_MS);
-	// }
-	
-	// // Scroll Up
-	// ssd1306_clear_screen(&dev, false);
-	// ssd1306_contrast(&dev, 0xff);
-	// ssd1306_display_text(&dev, 0, "---Scroll  UP---", 16, true);
-	// //ssd1306_software_scroll(&dev, 7, 1);
-	// ssd1306_software_scroll(&dev, (dev._pages - 1), 1);
-	// for (int line=0;line<bottom+10;line++) {
-	// 	lineChar[0] = 0x01;
-	// 	sprintf(&lineChar[1], " Line %02d", line);
-	// 	ssd1306_scroll_text(&dev, lineChar, strlen(lineChar), false);
-	// 	vTaskDelay(500 / portTICK_PERIOD_MS);
-	// }
-	// vTaskDelay(3000 / portTICK_PERIOD_MS);
-	
   VL53L0X vl(I2C_PORT);
   if (!vl.init()) {
     ESP_LOGE(TAG, "Failed to initialize VL53L0X :(");
@@ -147,10 +118,6 @@ extern "C" void app_main(void)
 
   while (1) {
     uint16_t raw_result_mm = 0;
-
-    // TickType_t tick_start = xTaskGetTickCount();
-    // TickType_t tick_end = xTaskGetTickCount();
-    // int took_ms = ((int)tick_end - tick_start) / portTICK_PERIOD_MS;
 	char buf[20];
 	if(vl.read(&raw_result_mm)){
 		int32_t calibrated_raw = (int32_t)raw_result_mm + OFFSET_CALIBRATION;
