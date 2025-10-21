@@ -26,6 +26,13 @@
 #define I2C_PORT I2C_NUM_0
 #define TAG "app_main"
 #define tag "SSD1306"
+#define OFFSET_CALIBRATION -20
+#define FILTER_WINDOW 5
+#define MIN_DISTANCE 0
+#define MAX_DISTANCE 2000
+
+int32_t mesurements[FILTER_WINDOW] = {0};
+uint8_t mesurement_index = 0;
 
 extern "C" void app_main(void)
 {
@@ -139,16 +146,37 @@ extern "C" void app_main(void)
   ssd1306_clear_screen(&dev, false);
 
   while (1) {
-    uint16_t result_mm = 0;
-    TickType_t tick_start = xTaskGetTickCount();
-    bool res = vl.read(&result_mm);
-    TickType_t tick_end = xTaskGetTickCount();
-    int took_ms = ((int)tick_end - tick_start) / portTICK_PERIOD_MS;
+    uint16_t raw_result_mm = 0;
+
+    // TickType_t tick_start = xTaskGetTickCount();
+    // TickType_t tick_end = xTaskGetTickCount();
+    // int took_ms = ((int)tick_end - tick_start) / portTICK_PERIOD_MS;
 	char buf[20];
-    if (res){
-		ESP_LOGI(TAG, "Range: %d [mm] took %d [ms]", (int)result_mm, took_ms);
-		sprintf(buf, "%d mm", result_mm);
-		// ssd1306_display_text(&dev, 0, buf, strlen(buf), false);
+	if(vl.read(&raw_result_mm)){
+		int32_t calibrated_raw = (int32_t)raw_result_mm + OFFSET_CALIBRATION;
+		calibrated_raw = (calibrated_raw < MIN_DISTANCE) ? MIN_DISTANCE : calibrated_raw;
+		calibrated_raw = (calibrated_raw > MAX_DISTANCE) ? MAX_DISTANCE : calibrated_raw;
+
+		mesurements[mesurement_index] = calibrated_raw;
+		mesurement_index = (mesurement_index + 1) % FILTER_WINDOW;
+
+		int32_t sorted[FILTER_WINDOW];
+		memcpy(sorted, mesurements, sizeof(mesurements));
+		for (int i = 0; i < FILTER_WINDOW - 1; i++)
+		{
+			for (int j = i + 1; j < FILTER_WINDOW; j++)
+			{
+				if (sorted[j] < sorted[i])
+				{
+					uint16_t temp = sorted[i];
+					sorted[i] = sorted[j];
+					sorted[j] = temp;
+				}
+			}
+		}
+		int32_t final_distance_mm = sorted[FILTER_WINDOW/2];
+		ESP_LOGI(TAG, "Range: %d [mm]", (int)final_distance_mm);
+		sprintf(buf, "%ld mm ", final_distance_mm);
 		ssd1306_display_text_x3(&dev, 0, buf, strlen(buf), false);
 	}
 	else{
@@ -157,64 +185,6 @@ extern "C" void app_main(void)
 	    ssd1306_display_text(&dev, 1, "measure", 7, false);
   	}
   }
-  // // Scroll Down
-	// ssd1306_clear_screen(&dev, false);
-	// ssd1306_contrast(&dev, 0xff);
-	// ssd1306_display_text(&dev, 0, "--Scroll  DOWN--", 16, true);
-	// //ssd1306_software_scroll(&dev, 1, 7);
-	// ssd1306_software_scroll(&dev, 1, (dev._pages - 1) );
-	// for (int line=0;line<bottom+10;line++) {
-	// 	lineChar[0] = 0x02;
-	// 	sprintf(&lineChar[1], " Line %02d", line);
-	// 	ssd1306_scroll_text(&dev, lineChar, strlen(lineChar), false);
-	// 	vTaskDelay(500 / portTICK_PERIOD_MS);
-	// }
-	// vTaskDelay(3000 / portTICK_PERIOD_MS);
-
-	// // Page Down
-	// ssd1306_clear_screen(&dev, false);
-	// ssd1306_contrast(&dev, 0xff);
-	// ssd1306_display_text(&dev, 0, "---Page	DOWN---", 16, true);
-	// ssd1306_software_scroll(&dev, 1, (dev._pages-1) );
-	// for (int line=0;line<bottom+10;line++) {
-	// 	//if ( (line % 7) == 0) ssd1306_scroll_clear(&dev);
-	// 	if ( (line % (dev._pages-1)) == 0) ssd1306_scroll_clear(&dev);
-	// 	lineChar[0] = 0x02;
-	// 	sprintf(&lineChar[1], " Line %02d", line);
-	// 	ssd1306_scroll_text(&dev, lineChar, strlen(lineChar), false);
-	// 	vTaskDelay(500 / portTICK_PERIOD_MS);
-	// }
-	// vTaskDelay(3000 / portTICK_PERIOD_MS);
-
-	// // Horizontal Scroll
-	// ssd1306_clear_screen(&dev, false);
-	// ssd1306_contrast(&dev, 0xff);
-	// ssd1306_display_text(&dev, center, "Horizontal", 10, false);
-	// ssd1306_hardware_scroll(&dev, SCROLL_RIGHT);
-	// vTaskDelay(5000 / portTICK_PERIOD_MS);
-	// ssd1306_hardware_scroll(&dev, SCROLL_LEFT);
-	// vTaskDelay(5000 / portTICK_PERIOD_MS);
-	// ssd1306_hardware_scroll(&dev, SCROLL_STOP);
-	
-	// // Vertical Scroll
-	// ssd1306_clear_screen(&dev, false);
-	// ssd1306_contrast(&dev, 0xff);
-	// ssd1306_display_text(&dev, center, "Vertical", 8, false);
-	// ssd1306_hardware_scroll(&dev, SCROLL_DOWN);
-	// vTaskDelay(5000 / portTICK_PERIOD_MS);
-	// ssd1306_hardware_scroll(&dev, SCROLL_UP);
-	// vTaskDelay(5000 / portTICK_PERIOD_MS);
-	// ssd1306_hardware_scroll(&dev, SCROLL_STOP);
-	
-	// // Invert
-	// ssd1306_clear_screen(&dev, true);
-	// ssd1306_contrast(&dev, 0xff);
-	// ssd1306_display_text(&dev, center, "  Good Bye!!", 12, true);
-	// vTaskDelay(5000 / portTICK_PERIOD_MS);
-
-
-	// // Fade Out
-	// ssd1306_fadeout(&dev);
 	
 #if 0
 	// Fade Out
