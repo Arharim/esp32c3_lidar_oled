@@ -145,11 +145,9 @@ while (1) {
 
         ESP_LOGI(TAG, "Raw: %d, Calibrated: %ld, Final: %ld [mm]", raw_result_mm, calibrated_raw, final_distance_mm);
         sprintf(buf, "%ld mm", final_distance_mm);
-        // ssd1306_clear_screen(&dev, false);
         ssd1306_display_text_x3(&dev, 0, buf, strlen(buf), false);
     } else {
         ESP_LOGE(TAG, "Failed to measure :(");
-        // ssd1306_clear_screen(&dev, false);
         ssd1306_display_text(&dev, 0, "Failed to", 9, false);
         ssd1306_display_text(&dev, 1, "measure", 7, false);
     }
@@ -164,6 +162,4 @@ while (1) {
 	}
 #endif
 
-	// Restart module
-	// esp_restart();
 }
