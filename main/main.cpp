@@ -107,7 +107,7 @@ extern "C" void app_main(void)
 	ssd1306_display_text(&dev, 3, "Hello World!!", 13, true);
 #endif // CONFIG_SSD1306_128x32
 	vTaskDelay(3000 / portTICK_PERIOD_MS);
-	
+
   VL53L0X vl(I2C_PORT);
   if (!vl.init()) {
     ESP_LOGE(TAG, "Failed to initialize VL53L0X :(");
@@ -116,43 +116,46 @@ extern "C" void app_main(void)
 
   ssd1306_clear_screen(&dev, false);
 
-  while (1) {
+while (1) {
     uint16_t raw_result_mm = 0;
-	char buf[20];
-	if(vl.read(&raw_result_mm)){
-		int32_t calibrated_raw = (int32_t)raw_result_mm + OFFSET_CALIBRATION;
-		calibrated_raw = (calibrated_raw < MIN_DISTANCE) ? MIN_DISTANCE : calibrated_raw;
-		calibrated_raw = (calibrated_raw > MAX_DISTANCE) ? MAX_DISTANCE : calibrated_raw;
+    char buf[20];
+    if (vl.read(&raw_result_mm)) {
+        int32_t calibrated_raw = (int32_t)raw_result_mm + OFFSET_CALIBRATION;
+        calibrated_raw = (calibrated_raw < MIN_DISTANCE) ? MIN_DISTANCE : calibrated_raw;
+        calibrated_raw = (calibrated_raw > MAX_DISTANCE) ? MAX_DISTANCE : calibrated_raw;
+        mesurements[mesurement_index] = calibrated_raw;
+        mesurement_index = (mesurement_index + 1) % FILTER_WINDOW;
 
-		mesurements[mesurement_index] = calibrated_raw;
-		mesurement_index = (mesurement_index + 1) % FILTER_WINDOW;
+        int32_t sorted[FILTER_WINDOW];
+        memcpy(sorted, mesurements, sizeof(mesurements));
+        for (int i = 0; i < FILTER_WINDOW - 1; i++) {
+            for (int j = i + 1; j < FILTER_WINDOW; j++) {
+                if (sorted[j] < sorted[i]) {
+                    int32_t temp = sorted[i];
+                    sorted[i] = sorted[j];
+                    sorted[j] = temp;
+                }
+            }
+        }
+        int32_t final_distance_mm = sorted[FILTER_WINDOW / 2];
 
-		int32_t sorted[FILTER_WINDOW];
-		memcpy(sorted, mesurements, sizeof(mesurements));
-		for (int i = 0; i < FILTER_WINDOW - 1; i++)
-		{
-			for (int j = i + 1; j < FILTER_WINDOW; j++)
-			{
-				if (sorted[j] < sorted[i])
-				{
-					uint16_t temp = sorted[i];
-					sorted[i] = sorted[j];
-					sorted[j] = temp;
-				}
-			}
-		}
-		int32_t final_distance_mm = sorted[FILTER_WINDOW/2];
-		ESP_LOGI(TAG, "Range: %d [mm]", (int)final_distance_mm);
-		sprintf(buf, "%ld mm ", final_distance_mm);
-		ssd1306_display_text_x3(&dev, 0, buf, strlen(buf), false);
-	}
-	else{
+        if (FILTER_WINDOW >= 3) {
+            final_distance_mm = (sorted[FILTER_WINDOW/2 - 1] + sorted[FILTER_WINDOW/2] + sorted[FILTER_WINDOW/2 + 1]) / 3;
+        }
+
+        ESP_LOGI(TAG, "Raw: %d, Calibrated: %d, Final: %d [mm]", raw_result_mm, calibrated_raw, final_distance_mm);
+        sprintf(buf, "%ld mm", final_distance_mm);
+        ssd1306_clear_screen(&dev, false);
+        ssd1306_display_text_x3(&dev, 0, buf, strlen(buf), false);
+    } else {
         ESP_LOGE(TAG, "Failed to measure :(");
-	    ssd1306_display_text(&dev, 0, "Failed to", 9, false);
-	    ssd1306_display_text(&dev, 1, "measure", 7, false);
-  	}
-  }
-	
+        ssd1306_clear_screen(&dev, false);
+        ssd1306_display_text(&dev, 0, "Failed to", 9, false);
+        ssd1306_display_text(&dev, 1, "measure", 7, false);
+    }
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+}
+
 #if 0
 	// Fade Out
 	for(int contrast=0xff;contrast>0;contrast=contrast-0x20) {
